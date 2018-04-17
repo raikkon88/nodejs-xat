@@ -1,0 +1,19 @@
+html
+    head
+        title= title
+    body
+        h1= page_title
+        p= "Connected Users"
+        ul
+            each val in connected_users
+                li= val.name
+
+        form(method='POST' action='/sala')
+            p
+                | Username :
+                input(type='text', name='username', value='')
+                input(type='number', name='sala', value= sala, style="visibility:hidden")
+            input(type='submit', value='Submit')
+
+        p( style= visibility)
+           | The username is already in use

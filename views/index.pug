@@ -1,0 +1,9 @@
+html
+    head
+        title= title
+    body
+        h1= page_title
+        ul
+            each val in sales
+                li
+                    a(href=val.id )= val.name

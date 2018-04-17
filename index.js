@@ -1,19 +1,36 @@
 // REQUIRES
 // -------------------------------------------------------------------------------------------------------------------
 
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var fs = require('fs');
 var sqlite3 = require('sqlite3').verbose();
+var bodyParser = require('body-parser');
+
+// CONFIGURACIÓ
+// -------------------------------------------------------------------------------------------------------------------
+app.set('views', './views');        // anunciem a la aplicació on es troven les vistes.
+app.set('view engine', 'pug');      // anunciem a l'aplicació quin motor de plantilles s'utilitza.
+app.use(bodyParser.urlencoded({     // li diem a la app que és capaç de parsejar peticions post per el body.
+    extended: true
+}));
+app.use(bodyParser.json());         // li diem a la app que és capaç de parsejar peticions post per el body.
 
 // CONSTANTS
 // -------------------------------------------------------------------------------------------------------------------
 const DB_FILE = './db/app_db.db'
 const CREATE_SALES = 'CREATE TABLE sala (id INTEGER PRIMARY KEY AUTOINCREMENT, name text)';
 const CREATE_USUARIS = 'CREATE TABLE usuari (id INTEGER PRIMARY KEY AUTOINCREMENT, name text, sala number)';
-const GET_SALES = 'SELECT * FROM sala';
+const GET_SALES = "SELECT ('/login?id=') || id as id, name FROM sala";
+const GET_SALA_NAME = "SELECT name from sala where id = ?";
+const GET_USERS_SALA = "select name from usuari where sala = ?";
+const GET_USER_FROM_NAME = "select * from usuari where name = ? and sala = ?";
+const INSERT_USER_SALA = "insert into usuari ( name, sala) values(?, ?) ";
 
 let sales = ['sala 1', 'sala 2', 'sala 3'];
+
+
 // DATABASE FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------------
 /**
@@ -68,39 +85,91 @@ createDatabase();
 // FUNCTIONS
 // -------------------------------------------------------------------------------------------------------------------
 
+function logError(error, res){
+    res.send("<h1>Not Ok</h1>");
+}
 
 // ROUTES
 // -------------------------------------------------------------------------------------------------------------------
 
 app.get('/', function(req, res){
-    console.log("petició a l'arrel");
     // Recopero les sales de la base de dades.
     let db = new sqlite3.Database(DB_FILE, sqlite3.OPEN_READONLY, (err) => {
        if(err) {
-           console.log(err.message);
-           res.send('<h1>NOT OK</h1>');
+           logError(err, res);
        }
        else{
-           db.get(GET_SALES, (err, rows) => {
+           db.all(GET_SALES, (err, rows) => {
               if(err) {
-                  console.log(err.message);
-                  res.send('<h1>NOT OK</h1>');
+                  logError(err, res);
               }
               else {
-                  // Se li ha d'enviar la resposta.
-                  res.send('<h1>OK ' + JSON.stringify(rows) + '</h1>')
+                  res.render('index', { title: 'Xat BCDS', page_title: 'Possibles sales de xat', sales : rows});
               }
            });
        }
     });
 });
 
-app.get('/sales', function(req, res){
+app.get('/login', function(req, res){
+    var visibility = "collapse"
+    if(req.query.error == 1){
+        visibility = "visible";
+    }
+    var idSala = req.query.id;
 
+    let db = new sqlite3.Database(DB_FILE, sqlite3.OPEN_READONLY, (err) => {
+        if(err) {
+            logError(err, res);
+        }
+        else{
+            db.all(GET_SALA_NAME, idSala, (err, rows) => {
+                if(err) {
+                    logError(err, res);
+                }
+                else {
+                    var title = rows.name
+                    db.all(GET_USERS_SALA, idSala, (err, rows) => {
+                        if(err) {
+                            logError(err, res);
+                        }
+                        else {
+                            var users = rows;
+                            res.render('login', { title: title, title_page: "Login per la " + idSala, connected_users: users, visibility: "visibility :" + visibility , sala: idSala });
+                        }
+                    });
+                }
+            });
+        }
+    });
 });
 
-app.get('/sala', function(req, res){
-   res.send('<h1>Sala</h1>')
+app.post('/sala', function(req, res){
+    var username = req.body.username;
+    var sala = req.body.sala;
+    let db = new sqlite3.Database(DB_FILE, sqlite3.OPEN_READWRITE, (err) => {
+        if(err) {
+            logError(err, res);
+        }
+        else{
+            db.all(GET_USER_FROM_NAME, [ username , sala ], (err, rows) => {
+                if(rows.length > 0){
+                    res.redirect(301, '/login?error=1');
+                }
+                else {
+                    db.run(INSERT_USER_SALA, [username, sala], (err) => {
+                       if(err){
+                           logError(err, res);
+                       }
+                       else{
+                           res.send("<h1>vaia</h1>");
+                       }
+                    });
+                }
+            });
+        }
+    });
+
 });
 
 
