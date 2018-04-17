@@ -1,0 +1,9 @@
+{
+  "name": "bcds-xat",
+  "version": "0.0.1",
+  "decription": "Xat app to test bcds net practices",
+  "dependencies": {
+    "express": "^4.15.2",
+    "sqlite3": "^4.0.0"
+  }
+}
