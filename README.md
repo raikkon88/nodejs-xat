@@ -36,3 +36,4 @@ Els usuaris s'aniran afegint a mesura que es vagin connectant a les sales. La re
 
 - **[SQL TUTORIAL](http://www.sqlitetutorial.net/sqlite-nodejs)**
 
+
