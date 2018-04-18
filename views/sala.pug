@@ -17,7 +17,7 @@ html
             | Welcome to the xat !{sala}
         h2
             | Connected Users :
-        ul
+        ul(id= "users_list")
             each val in users
                 li= val.name
 

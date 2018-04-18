@@ -178,19 +178,6 @@ app.post('/sala', function(req, res){
                         sala: sala,
                         user: username
                     });
-                    /*db.run(INSERT_USER_SALA, [username, sala], (err) => {
-                       if(err){
-                           logError(err, res);
-                       }
-                       else{
-                           db.all(GET_USERS_SALA, sala, (err, rows) => {
-                               if(err) logError(err, res);
-                               else{
-
-                               }
-                           });
-                       }
-                    });*/
                 }
             });
         }
@@ -215,7 +202,7 @@ io.on('connection', function(socket){
                     }
                     else {
                         io.emit('user message', JSON.stringify(
-                            {"user": element.name, "room": room, "connected": true})
+                            {"user": user, "room": room, "connected": true})
                         );
                     }
                 });
@@ -243,7 +230,7 @@ io.on('connection', function(socket){
                     }
                     else {
                         io.emit('user message', JSON.stringify(
-                            {"user": element.name, "room": room, "connected": false})
+                            {"user": user, "room": room, "connected": false})
                         );
                     }
                 });

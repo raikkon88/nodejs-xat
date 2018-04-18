@@ -11,7 +11,7 @@ const SALA_PAGE  = "sala";
 // PROGRAM VARIABLES
 // ------------------------------------------------------------------------
 
-var page = document.URL.includes(LOGIN_PAGE) ? 1 : document.URL.includes(SALES_PAGE) ? 2 : 3;
+var page = document.URL.includes(SALA_PAGE) ? 3 : document.URL.includes(SALES_PAGE) ? 2 : 1;
 
 
 var cookie = getCookie(COOKIE_ID);
@@ -58,6 +58,27 @@ function xat(){
         // Quan es reb un missatge
         socket.on('chat message', function(msg){
             $('#messages').append($('<li>').text(msg));
+        });
+
+        socket.on('user message', function(msg){
+
+            var userUpdate = JSON.parse(msg);
+            if(window.room == parseInt(userUpdate.room)){
+                if(userUpdate.connected){
+                    // Afegeixo el connectat a la llista d'usuaris connectats
+                    $('#users_list').append( '<li>' + userUpdate.user + '</li>');
+                }
+                else{
+                    console.log("elimino usuari " + msg);
+                    // Elimino l'usuari del llistat de connectats
+                    var ul = $('#users_list');
+                    ul.children('li').each((index) =>{
+                        console.log( index + " -> " + $('#users_list li').eq(index).text());
+                        if( $('#users_list li').eq(index).text() == userUpdate.user)
+                            $('#users_list li').eq(index).remove();
+                    });
+                }
+            }
         });
     });
 
