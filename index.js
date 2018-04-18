@@ -170,14 +170,22 @@ app.post('/sala', function(req, res){
                     res.redirect(301, '/login?error=1');
                 }
                 else {
-                    res.render('sala', {
-                        title: sala,
-                        page_title: "Sala de xat " + sala,
-                        username: username,
-                        users: rows,
-                        sala: sala,
-                        user: username
+                    db.all(GET_USERS_SALA, sala, (err, rows) => {
+                        if(err) {
+                            logError(err, res);
+                        }
+                        else {
+                        }
+                        res.render('sala', {
+                            title: sala,
+                            page_title: "Sala de xat " + sala,
+                            username: username,
+                            users: rows,
+                            sala: sala,
+                            user: username
+                        });
                     });
+
                 }
             });
         }
