@@ -1,5 +1,31 @@
+doctype html
 html
     head
+        script.
+            var nickname = '!{user}'
+            var room = '!{sala}'
         title= title
+        script(src='https://code.jquery.com/jquery-3.3.1.min.js')
+        script(src='/socket.io/socket.io.js')
+        script(src='/functions.js')
+        style
+            include ../public/style.css
     body
+
         h1= page_title
+        p
+            | Welcome to the xat !{sala}
+        h2
+            | Connected Users :
+        ul
+            each val in users
+                li= val.name
+
+        hr
+
+        ul( id= "messages")
+        form(action="")
+            input(id="m" autocomplete="off")
+            button "Send"
+
+

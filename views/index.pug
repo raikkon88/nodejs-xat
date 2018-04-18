@@ -1,6 +1,12 @@
+//- index.pug
+doctype html
 html
     head
         title= title
+        script(src='https://code.jquery.com/jquery-3.3.1.min.js')
+        script(src='/functions.js')
+        style
+            include ../public/style.css
     body
         h1= page_title
         ul

@@ -1,9 +1,15 @@
+doctype html
 html
     head
         title= title
+        script(src='https://code.jquery.com/jquery-3.3.1.min.js')
+        script(src='/functions.js')
+        style
+            include ../public/style.css
     body
         h1= page_title
-        p= "Connected Users"
+        h2
+            | Connected Users :
         ul
             each val in connected_users
                 li= val.name
@@ -15,5 +21,5 @@ html
                 input(type='number', name='sala', value= sala, style="visibility:hidden")
             input(type='submit', value='Submit')
 
-        p( style= visibility)
+        p(style= visibility)
            | The username is already in use
