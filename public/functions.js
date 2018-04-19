@@ -1,6 +1,5 @@
-console.log("Functions js file included");
-console.log("--------------------------------------------------");
-
+// CONSTANTS
+// ------------------------------------------------------------------------
 const COOKIE_ID = "xat-bcds";
 const COOKIE_EXPIRATION_DAYS = 14;
 
@@ -10,10 +9,10 @@ const SALA_PAGE  = "sala";
 
 // PROGRAM VARIABLES
 // ------------------------------------------------------------------------
-
 var page = document.URL.includes(SALA_PAGE) ? 3 : document.URL.includes(LOGIN_PAGE) ? 2 : 1;
 
-
+// PROGRAM INIT
+// ------------------------------------------------------------------------
 var cookie = getCookie(COOKIE_ID);
 if(cookie != ""){
     if(page == 1 || page == 2){
@@ -26,10 +25,11 @@ if(cookie != ""){
 }
 
 if(page == 3){
-    // Implementem la funcionalitat del xat.
+    // Implementem la funcionalitat del xat si i només si és la pàgina del xat.
     xat();
 }
 else if(page == 2){
+    // Implementem la part dels sockets que es comuniquen per saver quins usuaris estan o no connectats i a quines sales.
     login();
 }
 
@@ -41,7 +41,7 @@ else if(page == 2){
 /**
  * Donat un missatge d'actualització d'usuari, cerca una llista amb id 'users_list'
  * i afegeix o elimina un usuari de la llista depenent de si hi és o si no.
- * @param userUpdate Missatge rebut per el socket.
+ * @param userUpdate Missatge rebut per el socket, conté els camps user, room i connected.
  */
 function updateUserOnUl(userUpdate){
 
@@ -62,28 +62,62 @@ function updateUserOnUl(userUpdate){
 
 }
 
+/**
+ *
+ * @param user
+ * @param room
+ * @param message
+ * @returns {string}
+ */
 function mapToProtocol(user, room, message){
     return JSON.stringify({ "user" : user, "room": room, "msg":message});
 }
 
+/**
+ * Converteix el json amb el missatge rebut a un missatge per escriure per pantalla
+ * @param json missatge rebut en format json
+ */
+function mapToMessage(json){
+
+    var p = document.createElement('p');
+    console.log(p);
+    var b = document.createElement('strong');
+    console.log(b);
+    b.append(json.user + " : ");
+    console.log(b);
+    p.append(b);
+    console.log(p);
+    p.append(json.msg);
+    console.log(p);
+    return  p;
+}
+
+/**
+ * Funció que s'executa quan estem a la pàgina de login
+ */
 function login(){
     $(function(){
         var socket = io();
+        /**
+         * Quan es reb un missateg d'actualització d'usuari afegim o treiem aquest usuari del llistat
+         */
         socket.on('user message', function(msg){
-
             var userUpdate = JSON.parse(msg);
             if(userUpdate.room == window.room) {
-                console.log("login " + msg);
-                console.log("és correcte");
                 updateUserOnUl(userUpdate);
             }
         });
     });
 }
 
+/**
+ *
+ */
 function xat(){
     $(function() {
-        // Quan connectem
+        /**
+         * Quan connectem li enviem paràmetres al socket. és interessant saber quin usuari es connecta i a quina sala.
+         */
         var socket = io({
                 query : {
                     user : window.nickname,
@@ -91,17 +125,30 @@ function xat(){
                 }
             }
         );
+        /**
+         * Quan s'envia un missatge es transforma al protocol format de missatge
+         */
         $('form').submit(function(){
             socket.emit('chat message', mapToProtocol(window.nickname, window.room, $('#m').val()));
             $('#m').val('');
             return false;
         });
 
-        // Quan es reb un missatge
+        /**
+         * Quan es reb un missatge es transforma en la cadena a agegir al xat.
+         */
         socket.on('chat message', function(msg){
-            $('#messages').append($('<li>').text(msg));
+            var json = JSON.parse(msg);
+            if(json.room == window.room){
+                $('#messages').append($('<li>').append(
+                    mapToMessage(json))
+                );
+            }
         });
 
+        /**
+         * Quan es reb un missatge amb el protocol format de usuari
+         */
         socket.on('user message', function(msg){
             var userUpdate = JSON.parse(msg);
             if(window.room == parseInt(userUpdate.room)){
@@ -110,9 +157,6 @@ function xat(){
         });
     });
 }
-
-
-
 
 // COOKIES
 // ------------------------------------------------------------------------

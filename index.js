@@ -236,7 +236,6 @@ io.on('connection', function(socket){
                             logError(err, res);
                         }
                         else {
-                            console.log("s'esta deconnectant també..." + user);
                             io.emit('user message', JSON.stringify(
                                 {"user": user, "room": room, "connected": false})
                             );
