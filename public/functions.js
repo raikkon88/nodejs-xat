@@ -11,7 +11,7 @@ const SALA_PAGE  = "sala";
 // PROGRAM VARIABLES
 // ------------------------------------------------------------------------
 
-var page = document.URL.includes(SALA_PAGE) ? 3 : document.URL.includes(SALES_PAGE) ? 2 : 1;
+var page = document.URL.includes(SALA_PAGE) ? 3 : document.URL.includes(LOGIN_PAGE) ? 2 : 1;
 
 
 var cookie = getCookie(COOKIE_ID);
@@ -29,14 +29,56 @@ if(page == 3){
     // Implementem la funcionalitat del xat.
     xat();
 }
+else if(page == 2){
+    login();
+}
 
 
 
 // FUNCTIONS CHAT
 // ------------------------------------------------------------------------
 
+/**
+ * Donat un missatge d'actualització d'usuari, cerca una llista amb id 'users_list'
+ * i afegeix o elimina un usuari de la llista depenent de si hi és o si no.
+ * @param userUpdate Missatge rebut per el socket.
+ */
+function updateUserOnUl(userUpdate){
+
+        console.log(userUpdate.connected);
+        if(userUpdate.connected){
+            // Afegeixo el connectat a la llista d'usuaris connectats
+            $('#users_list').append( '<li>' + userUpdate.user + '</li>');
+        }
+        else{
+            // Elimino l'usuari del llistat de connectats
+            var ul = $('#users_list');
+            ul.children('li').each((index) =>{
+                console.log( index + " -> " + $('#users_list li').eq(index).text());
+                if( $('#users_list li').eq(index).text() == userUpdate.user)
+                    $('#users_list li').eq(index).remove();
+            });
+        }
+
+}
+
 function mapToProtocol(user, room, message){
     return JSON.stringify({ "user" : user, "room": room, "msg":message});
+}
+
+function login(){
+    $(function(){
+        var socket = io();
+        socket.on('user message', function(msg){
+
+            var userUpdate = JSON.parse(msg);
+            if(userUpdate.room == window.room) {
+                console.log("login " + msg);
+                console.log("és correcte");
+                updateUserOnUl(userUpdate);
+            }
+        });
+    });
 }
 
 function xat(){
@@ -61,27 +103,12 @@ function xat(){
         });
 
         socket.on('user message', function(msg){
-
             var userUpdate = JSON.parse(msg);
             if(window.room == parseInt(userUpdate.room)){
-                if(userUpdate.connected){
-                    // Afegeixo el connectat a la llista d'usuaris connectats
-                    $('#users_list').append( '<li>' + userUpdate.user + '</li>');
-                }
-                else{
-                    console.log("elimino usuari " + msg);
-                    // Elimino l'usuari del llistat de connectats
-                    var ul = $('#users_list');
-                    ul.children('li').each((index) =>{
-                        console.log( index + " -> " + $('#users_list li').eq(index).text());
-                        if( $('#users_list li').eq(index).text() == userUpdate.user)
-                            $('#users_list li').eq(index).remove();
-                    });
-                }
+                updateUserOnUl(userUpdate);
             }
         });
     });
-
 }
 
 

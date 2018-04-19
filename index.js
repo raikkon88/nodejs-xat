@@ -134,7 +134,7 @@ app.get('/login', function(req, res){
                     logError(err, res);
                 }
                 else {
-                    var title = rows.name
+                    var title = "Login per " + rows[0].name;
                     db.all(GET_USERS_SALA, idSala, (err, rows) => {
                         if(err) {
                             logError(err, res);
@@ -221,29 +221,30 @@ io.on('connection', function(socket){
 
     socket.on('chat message', function(msg){
         var message = JSON.parse(msg);
-
         io.emit('chat message', msg);
     });
 
 
     socket.on('disconnect', function(){
-
-        // LOG OUT a una sala
-        let db = new sqlite3.Database(DB_FILE, sqlite3.OPEN_READWRITE, (err) => {
-            if (err) console.log(err.message);
-            else {
-                db.run(DELETE_USER_SALA, [user, room], (err) => {
-                    if (err) {
-                        logError(err, res);
-                    }
-                    else {
-                        io.emit('user message', JSON.stringify(
-                            {"user": user, "room": room, "connected": false})
-                        );
-                    }
-                });
-            }
-        });
+        if(user && room){ // Comrpovem que sigui una connexió activa.
+            // LOG OUT a una sala
+            let db = new sqlite3.Database(DB_FILE, sqlite3.OPEN_READWRITE, (err) => {
+                if (err) console.log(err.message);
+                else {
+                    db.run(DELETE_USER_SALA, [user, room], (err) => {
+                        if (err) {
+                            logError(err, res);
+                        }
+                        else {
+                            console.log("s'esta deconnectant també..." + user);
+                            io.emit('user message', JSON.stringify(
+                                {"user": user, "room": room, "connected": false})
+                            );
+                        }
+                    });
+                }
+            });
+        }
     });
 
 });
